@@ -26,9 +26,7 @@ class CdkUnzipLambdaStack(Stack):
 
         layer = _lambda.LayerVersion(self, 'UnzipFileFromS3BucketLayer',
                                      code=_lambda.AssetCode('lambda/layer/'),
-                                     compatible_runtimes=[_lambda.Runtime.PYTHON_3_9],
-                                     license='Apache-2.0',
-                                     description='The principal layer of UnzipFileFromS3Bucket',
+                                     description='The principal layer of UnzipFileFromS3Bucket'
                                      )
 
         cdk_lambda = _lambda.Function(
@@ -39,11 +37,11 @@ class CdkUnzipLambdaStack(Stack):
             description='Lambda function to unzip a file from an S3 bucket. Lambda is triggered by S3 event.',
             handler="unzip_file_from_s3.handler",
             role=lambda_role,
-            layers=[layer],
             environment={
                 'DESTINATION_BUCKET': f'{Stack.of(self).account}-destination-bucket'
             }
         )
+        cdk_lambda.add_layers(layer)
 
         # Output of created resource
         CfnOutput(scope=self, id='cdk-output-lambda',
