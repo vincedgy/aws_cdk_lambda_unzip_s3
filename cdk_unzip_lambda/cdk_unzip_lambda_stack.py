@@ -15,5 +15,5 @@ class CdkUnzipLambdaStack(Stack):
             'UnzipFileFromS3Bucket',
             runtime=_lambda.Runtime.PYTHON_3_9,
             code=_lambda.Code.from_asset('lambda'),
-            handler="unzip_fil_from_s3.handler"
+            handler="unzip_file_from_s3.handler"
         )

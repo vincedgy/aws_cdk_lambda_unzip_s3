@@ -54,7 +54,7 @@ def unzip_and_upload_files(file_to_unzip: str, source_bucket: str, destination_b
         raise f'Error: Unable to unzip & upload the file {file_to_unzip} from {source_bucket}'
 
 
-def lambda_handler(event, context):
+def handler(event, context):
     """Handler function for the lambda"""
 
     # Event parameters are stored
