@@ -9,7 +9,7 @@ destination_bucket = os.environ["DESTINATION_BUCKET"]
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-s3 = boto3.client('s3')
+s3 = boto3.resource('s3')
 
 
 def unzip_and_upload_files(file_to_unzip: str, source_bucket: str, destination_bucket: str):
@@ -23,7 +23,7 @@ def unzip_and_upload_files(file_to_unzip: str, source_bucket: str, destination_b
 
     try:
         # Instantiate the readable Body of the file tp unzip
-        s3_obj = s3.Bucket(source_bucket).Object(file_to_unzip)
+        s3_obj = s3.Object(source_bucket, file_to_unzip)
         body = s3_obj.get()['Body']
 
         # Read the content of the zipped file with stream_unzip
