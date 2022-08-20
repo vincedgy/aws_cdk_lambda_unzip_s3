@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
 import logging
 import os
-
+import pip
 from boto3 import s3
-from stream_unzip import stream_unzip
 
 # Globals
 destination_bucket = os.environ["DESTINATION_BUCKET"]
@@ -76,3 +75,12 @@ def handler(event, context):
     return {
         'statusCode': status_code
     }
+
+
+# Dynamicaly install steam_unzip at runtime
+if __name__ == '__main__':
+    try:
+        from stream_unzip import stream_unzip
+    except ImportError:
+        pip.main(['install', 'stream_unzip'])
+        from stream_unzip import stream_unzip

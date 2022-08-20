@@ -2,7 +2,6 @@ from aws_cdk import (
     aws_lambda as _lambda,
     aws_iam as _iam,
     CfnOutput,
-    RemovalPolicy,
     Stack,
 
 )
@@ -26,13 +25,13 @@ class CdkUnzipLambdaStack(Stack):
                                 ])
 
         # create layer
-        layer = _lambda.LayerVersion(self, 'UnzipFileFromS3Bucket_layer',
-                                     code=_lambda.AssetCode("layer/"),
-                                     description='Common helper utility',
-                                     compatible_runtimes=[_lambda.Runtime.PYTHON_3_6, _lambda.Runtime.PYTHON_3_7,
-                                                          _lambda.Runtime.PYTHON_3_8, _lambda.Runtime.PYTHON_3_9, ],
-                                     removal_policy=RemovalPolicy.DESTROY
-                                     )
+        # layer = _lambda.LayerVersion(self, 'UnzipFileFromS3Bucket_layer',
+        #                              code=_lambda.AssetCode("layer/"),
+        #                              description='Common helper utility',
+        #                              compatible_runtimes=[_lambda.Runtime.PYTHON_3_6, _lambda.Runtime.PYTHON_3_7,
+        #                                                   _lambda.Runtime.PYTHON_3_8, _lambda.Runtime.PYTHON_3_9, ],
+        #                              removal_policy=RemovalPolicy.DESTROY
+        #                              )
         # create lambda function
         cdk_lambda = _lambda.Function(
             self,
@@ -42,7 +41,7 @@ class CdkUnzipLambdaStack(Stack):
             description='Lambda function to unzip a file from an S3 bucket. Lambda is triggered by S3 event.',
             handler="unzip_file_from_s3.handler",
             role=lambda_role,
-            layers=[layer],
+            # layers=[layer],
             environment={
                 'DESTINATION_BUCKET': f'{Stack.of(self).account}-destination-bucket'
             }
@@ -51,5 +50,5 @@ class CdkUnzipLambdaStack(Stack):
         # Output of created resource
         CfnOutput(scope=self, id='cdk-output-lambda',
                   value=cdk_lambda.function_name)
-        CfnOutput(scope=self, id='cdk-output-lambda-layer',
-                  value=layer.layer_version_arn)
+        # CfnOutput(scope=self, id='cdk-output-lambda-layer',
+        #           value=layer.layer_version_arn)

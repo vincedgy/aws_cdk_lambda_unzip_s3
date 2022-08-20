@@ -37,6 +37,12 @@ Once the virtualenv is activated, you can install the required dependencies.
 $ pip install -r requirements.txt
 ```
 
+Install dependencies for lambda layer
+
+```
+$ pip3 install stream_unzip --target ./layer/python
+```
+
 At this point you can now synthesize the CloudFormation template for this code.
 
 ```
@@ -63,3 +69,7 @@ command.
  * `cdk docs`        open CDK documentation
 
 Enjoy!
+
+## Lambda layers based on Docker images
+
+- The is part is very much inspired by [this article](https://aws.amazon.com/blogs/devops/using-aws-codepipeline-for-deploying-container-images-to-aws-lambda-functions/)
