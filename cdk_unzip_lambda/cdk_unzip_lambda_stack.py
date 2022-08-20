@@ -27,7 +27,7 @@ class CdkUnzipLambdaStack(Stack):
 
         # create layer
         layer = _lambda.LayerVersion(self, 'UnzipFileFromS3Bucket_layer',
-                                     code=_lambda.Code.from_asset("layer"),
+                                     code=_lambda.AssetCode("layer/"),
                                      description='Common helper utility',
                                      compatible_runtimes=[_lambda.Runtime.PYTHON_3_6, _lambda.Runtime.PYTHON_3_7,
                                                           _lambda.Runtime.PYTHON_3_8, _lambda.Runtime.PYTHON_3_9, ],
