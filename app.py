@@ -2,10 +2,12 @@
 
 import aws_cdk as cdk
 
-from cdk_unzip_lambda.cdk_unzip_lambda_stack import CdkUnzipLambdaStack
-
+from pipeline.pipeline_stack import WorkshopPipelineStack
 
 app = cdk.App()
-CdkUnzipLambdaStack(app, "cdk-unzip-lambda")
+WorkshopPipelineStack(app, "WorkshopPipelineStack")
+
+# app = cdk.App()
+# CdkUnzipLambdaStack(app, "cdk-unzip-lambda")
 
 app.synth()

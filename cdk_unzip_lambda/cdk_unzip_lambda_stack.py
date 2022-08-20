@@ -1,12 +1,8 @@
-from constructs import Construct
 from aws_cdk import (
-    Duration,
+    aws_lambda as _lambda,
     Stack,
-    aws_iam as iam,
-    aws_sqs as sqs,
-    aws_sns as sns,
-    aws_sns_subscriptions as subs,
 )
+from constructs import Construct
 
 
 class CdkUnzipLambdaStack(Stack):
@@ -14,13 +10,10 @@ class CdkUnzipLambdaStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        queue = sqs.Queue(
-            self, "CdkUnzipLambdaQueue",
-            visibility_timeout=Duration.seconds(300),
+        _lambda.Function(
+            self,
+            'UnzipFileFromS3Bucket',
+            runtime=_lambda.Runtime.PYTHON_3_9,
+            code=_lambda.Code.from_asset('lambda'),
+            handler="unzip_fil_from_s3.handler"
         )
-
-        topic = sns.Topic(
-            self, "CdkUnzipLambdaTopic"
-        )
-
-        topic.add_subscription(subs.SqsSubscription(queue))
