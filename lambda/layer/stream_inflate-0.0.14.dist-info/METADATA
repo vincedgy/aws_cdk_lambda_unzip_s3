@@ -1,0 +1,69 @@
+Metadata-Version: 2.1
+Name: stream-inflate
+Version: 0.0.14
+Summary: Uncompress DEFLATE streams in pure Python
+Home-page: https://github.com/michalc/stream-inflate
+Author: Michal Charemza
+Author-email: michal@charemza.name
+License: UNKNOWN
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Topic :: System :: Archiving :: Compression
+Requires-Python: >=3.5.0
+Description-Content-Type: text/markdown
+License-File: LICENSE
+
+# stream-inflate [![CircleCI](https://circleci.com/gh/michalc/stream-inflate.svg?style=shield)](https://circleci.com/gh/michalc/stream-inflate) [![Test Coverage](https://api.codeclimate.com/v1/badges/1131e6ac6efb36647a9b/test_coverage)](https://codeclimate.com/github/michalc/stream-inflate/test_coverage)
+
+Uncompress Deflate and Deflate64 streams in pure Python.
+
+
+## Installation
+
+```bash
+pip install stream-inflate
+```
+
+
+## Usage
+
+To uncompress Deflate, use the `stream_inflate` function.
+
+```python
+from stream_inflate import stream_inflate
+import httpx
+
+def compressed_chunks():
+    # Iterable that yields the bytes of a DEFLATE-compressed stream
+    with httpx.stream('GET', 'https://www.example.com/my.txt') as r:
+        yield from r.iter_raw(chunk_size=65536)
+
+for uncompressed_chunk in stream_inflate()[0](compressed_chunks()):
+    print(uncompressed_chunk)
+```
+
+To uncompress Deflate64, use the `stream_inflate64` function.
+
+```python
+for uncompressed_chunk in stream_inflate64()[0](compressed_chunks()):
+    print(uncompressed_chunk)
+```
+
+For Deflate streams of unknown length where there may be other data _after_ the compressed part, the following pattern can be used to find how many bytes are not part of the compressed stream.
+
+```python
+uncompressed_chunks, is_done, num_bytes_unconsumed = stream_inflate()
+it = iter(compressed_chunks())
+
+while not is_done():
+    chunk = next(it)
+    for uncompressed in uncompressed_chunks((chunk,))
+        print(uncompressed)
+
+print(num_bytes_unconsumed())
+```
+
+This can be useful in certain ZIP files.
+
+
