@@ -14,7 +14,6 @@ class CdkUnzipLambdaStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-
         # Create role for your Lambda function
         lambda_role = _iam.Role(scope=self, id='cdk-lambda-role',
                                 assumed_by=_iam.ServicePrincipal('lambda.amazonaws.com'),
@@ -30,12 +29,8 @@ class CdkUnzipLambdaStack(Stack):
         layer = _lambda.LayerVersion(self, 'UnzipFileFromS3Bucket_layer',
                                      code=_lambda.Code.from_asset("layer"),
                                      description='Common helper utility',
-                                     compatible_runtimes=[
-                                         _lambda.Runtime.PYTHON_3_6,
-                                         _lambda.Runtime.PYTHON_3_7,
-                                         _lambda.Runtime.PYTHON_3_8,
-                                         _lambda.Runtime.PYTHON_3_9,
-                                     ],
+                                     compatible_runtimes=[_lambda.Runtime.PYTHON_3_6, _lambda.Runtime.PYTHON_3_7,
+                                                          _lambda.Runtime.PYTHON_3_8, _lambda.Runtime.PYTHON_3_9, ],
                                      removal_policy=RemovalPolicy.DESTROY
                                      )
         # create lambda function
@@ -55,6 +50,6 @@ class CdkUnzipLambdaStack(Stack):
 
         # Output of created resource
         CfnOutput(scope=self, id='cdk-output-lambda',
-                        value=cdk_lambda.function_name)
+                  value=cdk_lambda.function_name)
         CfnOutput(scope=self, id='cdk-output-lambda-layer',
-                       value=layer.function_name)
+                  value=layer.layer_version_arn)
