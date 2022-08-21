@@ -21,5 +21,4 @@ venv.bak/
 .cdk.staging/
 cdk.out/
 
-*.txt
 *.zip

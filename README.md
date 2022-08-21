@@ -39,8 +39,10 @@ $ pip install -r requirements.txt
 
 Install dependencies for lambda layer
 
+> The layer is mandatory for the installation of all python dependencies. The target platform is lambda AmazonLinuxv2 (linux_x86_64)
+
 ```
-$ rm -rf layer && pip install stream_unzip --target layer/python --upgrade --only-binary ":all:" --platform linux_x86_64 --implementation cp
+$ rm -rf layer && pip install -r requirements-layer.txt --target layer/python --upgrade --only-binary ":all:" --platform linux_x86_64 --implementation cp
 ```
 
 At this point you can now synthesize the CloudFormation template for this code.
@@ -70,6 +72,10 @@ command.
 
 Enjoy!
 
-## Lambda layers based on Docker images
 
-- The is part is very much inspired by [this article](https://aws.amazon.com/blogs/devops/using-aws-codepipeline-for-deploying-container-images-to-aws-lambda-functions/)
+## Intersting considerations 
+
+### Lambda layers based on Docker images
+
+In order to avoir local pip install for the layer, another approach should be to use docker images and build the docker image on AWS
+Need to check [this article](https://aws.amazon.com/blogs/devops/using-aws-codepipeline-for-deploying-container-images-to-aws-lambda-functions/)

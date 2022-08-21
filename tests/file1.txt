@@ -1,0 +1,9 @@
+total 8
+-rw-r--r--   1 vdagoury  staff    0 Jul 31 12:25 __init__.py
+drwxr-xr-x   4 vdagoury  staff  128 Aug 20 08:41 unit
+-rw-r--r--   1 vdagoury  staff    0 Aug 20 18:41 file1.txt
+-rw-r--r--   1 vdagoury  staff    0 Aug 20 18:41 file2.txt
+-rw-r--r--   1 vdagoury  staff    0 Aug 20 18:41 file3.txt
+-rw-r--r--   1 vdagoury  staff  460 Aug 20 18:41 test.zip
+drwxr-xr-x   8 vdagoury  staff  256 Aug 20 18:41 .
+drwxr-xr-x  19 vdagoury  staff  608 Aug 21 10:16 ..
