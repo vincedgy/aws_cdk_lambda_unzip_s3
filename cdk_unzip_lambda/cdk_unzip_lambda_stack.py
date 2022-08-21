@@ -43,7 +43,7 @@ class CdkUnzipLambdaStack(Stack):
                                 ])
 
         # create layer
-        custome_layer = _lambda.LayerVersion(self, 'UnzipFileFromS3Bucket_layer',
+        custome_layer = _lambda.LayerVersion(self, 'UnzipFileFromS3Bucket-layer',
                                              code=_lambda.AssetCode("layer/"),
                                              description='Common helper utility',
                                              compatible_runtimes=[_lambda.Runtime.PYTHON_3_6,
@@ -54,12 +54,12 @@ class CdkUnzipLambdaStack(Stack):
                                              )
         powertools_layer = _lambda.LayerVersion.from_layer_version_arn(
             self,
-            id="lambda-powertools",
+            id="lambda-powertools-layer",
             layer_version_arn=f"arn:aws:lambda:{self.region}:017000801446:layer:AWSLambdaPowertoolsPython:29"
         )
         lambda_insights_layer = _lambda.LayerVersion.from_layer_version_arn(
             self,
-            id="lambda-powertools",
+            id="lambda-insights-layer",
             layer_version_arn=f"arn:aws:lambda:us-west-1:580247275435:layer:LambdaInsightsExtension:14"
         )
 
