@@ -60,7 +60,7 @@ class CdkUnzipLambdaStack(Stack):
         lambda_insights_layer = _lambda.LayerVersion.from_layer_version_arn(
             self,
             id="lambda-insights-layer",
-            layer_version_arn=f"arn:aws:lambda:{self.region}:580247275435:layer:LambdaInsightsExtension:14"
+            layer_version_arn=f"arn:aws:lambda:eu-west-3:580247275435:layer:LambdaInsightsExtension:20"
         )
 
         # create lambda function
