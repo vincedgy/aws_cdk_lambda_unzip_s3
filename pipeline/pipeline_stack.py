@@ -4,10 +4,10 @@ from aws_cdk import (
     pipelines as pipelines,
     Stack,
 )
-from pipeline.pipeline_stage import WorkshopPipelineStage
+from pipeline.pipeline_stage import UnzipLambdaToS3PipelineStage
 
 
-class WorkshopPipelineStack(Stack):
+class UnzipLambdaToS3PipelineStack(Stack):
       
     def __init__(self, scope: Construct, id: str, **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
@@ -35,7 +35,7 @@ class WorkshopPipelineStack(Stack):
             ),
         )
 
-        deploy = WorkshopPipelineStage(self, "Deploy")
+        deploy = UnzipLambdaToS3PipelineStage(self, "Deploy")
         deploy_stage = pipeline.add_stage(deploy)
 
         # deploy_stage.add_post(

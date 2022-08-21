@@ -4,7 +4,7 @@ from aws_cdk import (
 )
 from cdk_unzip_lambda.cdk_unzip_lambda_stack import CdkUnzipLambdaStack
 
-class WorkshopPipelineStage(Stage):
+class UnzipLambdaToS3PipelineStage(Stage):
 
     def __init__(self, scope: Construct, id: str, **kwargs):
         super().__init__(scope, id, **kwargs)
