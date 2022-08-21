@@ -52,6 +52,11 @@ class CdkUnzipLambdaStack(Stack):
             id="lambda-powertools",
             layer_version_arn=f"arn:aws:lambda:{self.region}:017000801446:layer:AWSLambdaPowertoolsPython:29"
         )
+        lambda_insights = _lambda.LayerVersion.from_layer_version_arn(
+            self,
+            id="lambda_insights-powertools",
+            layer_version_arn=f"arn:aws:lambda:us-west-1:580247275435:layer:LambdaInsightsExtension:14"
+        )
         # create lambda function
         lambda_unzip_s3 = _lambda.Function(
             self,
