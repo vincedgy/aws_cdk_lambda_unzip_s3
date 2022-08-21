@@ -1,34 +1,28 @@
 #!/usr/bin/env python3
 import os
-import logging
-#from aws_lambda_powertools import Logger as logger
+from io import BytesIO
+from aws_lambda_powertools import Logger
+from aws_lambda_powertools.utilities.data_classes import S3Event
+from aws_lambda_powertools.utilities.typing import LambdaContext
+
 import boto3
 from stream_unzip import stream_unzip
 
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = Logger()
 
-# Globals
-try:
-    destination_bucket = os.environ["DESTINATION_BUCKET"]
-except:
-    destination_bucket = "124571346663-destination-bucket"
-
-s3 = boto3.resource('s3')
-
-def unzip_and_upload_files(file_to_unzip: str, source_bucket: str, destination_bucket: str):
+def unzip_and_upload_files(file_to_unzip: str, source_bucket_name: str, destination_bucket_name: str):
     """Main function for :
     1 - stream read the file_to_unzip based on S3 event (the lambda is triggered),
     2 - extract each file (saved on ephemeral storage) from within the zipfile using stream_unzip lib
-    3 - finaly savec the extracted file in the destination bucket
-
-    TODO : Stream put the unzip file and not store it on the ephemeral lambda local storage
+    3 - finaly save the extracted file content in the destination bucket
     """
 
     try:
         # Instantiate the readable Body of the file tp unzip
-        logger.info(f"## Opening file {file_to_unzip} from s3://{source_bucket}")
-        s3_obj = s3.Object(source_bucket, file_to_unzip)
+        logger.info(f"## Opening file {file_to_unzip} from s3://{source_bucket_name}")
+
+        s3 = boto3.resource('s3')
+        s3_obj = s3.Object(source_bucket_name, file_to_unzip)
         body = s3_obj.get()['Body']
 
         # Read the content of the zipped file with stream_unzip
@@ -40,28 +34,33 @@ def unzip_and_upload_files(file_to_unzip: str, source_bucket: str, destination_b
                 # files are also flatten in the destination bucket
                 filename = str(file_name.decode('utf-8')).replace("/", "-")
 
-                # writing localy the file
-                # TODO : consider put the file by stream and not localy
-                logger.info(f"## Writing {filename} localy")
-                with open(filename, "ab") as written_file:
-                    for chunk in file_chunks:
-                        written_file.write(chunk)
+                # Writing localy the file
+                logger.debug(f"## Buffer {filename} content")
+                buffer = BytesIO(bytes())
+                for chunk in file_chunks:
+                    buffer.write(chunk)
+                buffer.seek(0) # Important ! Reach the beginning of the buffer
 
-                # put the file in the bucket
-                s3.Object(destination_bucket, filename).upload_file(filename)
-                logger.info(f"## Unzipped file {filename} is now written on bucket {destination_bucket}")
+                # Put the buffer as a file into the bucket
+                destination_bucket = s3.Bucket(destination_bucket_name)
+                destination_bucket.upload_fileobj(buffer, filename)
 
-                # deleting the file localy for the sake of the local ephemeral storage
-                os.remove(filename)
-                logger.info(f"## {filename} is now deleted localy")
+                logger.info(f"## Unzipped file '{filename}' is now saved in bucket {destination_bucket_name}")
 
     except Exception as e:
         logger.exception(e)
-        raise f'Error: Unable to unzip & upload the file {file_to_unzip} from {source_bucket}'
+        raise f'Error: Unable to unzip & upload the file {file_to_unzip} from {source_bucket_name}'
 
 
-def handler(event, context):
+@logger.inject_lambda_context(log_event=True)
+def handler(event: S3Event, context: LambdaContext) -> str:
     """Handler function for the lambda"""
+
+    # Globals
+    try:
+        destination_bucket = os.environ["DESTINATION_BUCKET"]
+    except:
+        destination_bucket = "124571346663-destination-bucket"
 
     # Event parameters are stored
     source_bucket = event['Records'][0]['s3']['bucket']['name']

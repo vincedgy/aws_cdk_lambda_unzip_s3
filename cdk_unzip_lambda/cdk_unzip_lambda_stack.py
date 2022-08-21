@@ -62,7 +62,9 @@ class CdkUnzipLambdaStack(Stack):
             role=lambda_role,
             layers=[powertools_layer, custome_layer],
             environment={
-                'DESTINATION_BUCKET': DESTINATION_BUCKET_NAME
+                'DESTINATION_BUCKET': DESTINATION_BUCKET_NAME,
+                'POWERTOOLS_SERVICE_NAME': 'UnzipFileFromS3Bucket',
+                'LOG_LEVEL': 'INFO'
             }
         )
 
