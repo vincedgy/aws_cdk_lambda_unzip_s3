@@ -2,6 +2,7 @@ from aws_cdk import (
     aws_lambda as _lambda,
     aws_iam as _iam,
     aws_s3 as s3,
+    aws_s3_notifications as s3_notify,
     RemovalPolicy,
     CfnOutput,
     Stack,
@@ -52,7 +53,7 @@ class CdkUnzipLambdaStack(Stack):
             layer_version_arn=f"arn:aws:lambda:{self.region}:017000801446:layer:AWSLambdaPowertoolsPython:29"
         )
         # create lambda function
-        cdk_lambda = _lambda.Function(
+        lambda_unzip_s3 = _lambda.Function(
             self,
             'UnzipFileFromS3Bucket',
             runtime=_lambda.Runtime.PYTHON_3_9,
@@ -60,6 +61,7 @@ class CdkUnzipLambdaStack(Stack):
             description='Lambda function to unzip a file from an S3 bucket. Lambda is triggered by S3 event.',
             handler="unzip_file_from_s3.handler",
             role=lambda_role,
+
             layers=[powertools_layer, custome_layer],
             environment={
                 'DESTINATION_BUCKET': DESTINATION_BUCKET_NAME,
@@ -68,12 +70,20 @@ class CdkUnzipLambdaStack(Stack):
             }
         )
 
-        source_bucket.grant_read(cdk_lambda)
-        destination_bucket.grant_write(cdk_lambda)
+        # Adding grants on s3 for the lambda
+        source_bucket.grant_read(lambda_unzip_s3)
+        destination_bucket.grant_write(lambda_unzip_s3)
+
+        # Create trigger for Lambda function using suffix
+        notification = s3_notify.LambdaDestination(lambda_unzip_s3)
+        notification.bind(self, source_bucket)
+        # Add Create Event only for .zip files
+        source_bucket.add_object_created_notification(
+            notification, s3.NotificationKeyFilter(suffix='.zip'))
 
         # Output of created resource
         CfnOutput(scope=self, id='cdk-output-lambda',
-                  value=cdk_lambda.function_name)
+                  value=lambda_unzip_s3.function_name)
         CfnOutput(scope=self, id='source_bucket',
                   value=source_bucket.bucket_name)
         CfnOutput(scope=self, id='destination_bucket',
