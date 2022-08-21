@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 import os
 from io import BytesIO
+from typing import Dict
+
 from aws_lambda_powertools import Logger
 from aws_lambda_powertools.utilities.data_classes import S3Event
 from aws_lambda_powertools.utilities.typing import LambdaContext
@@ -17,43 +19,37 @@ def unzip_and_upload_files(file_to_unzip: str, source_bucket_name: str, destinat
     3 - finaly save the extracted file content in the destination bucket
     """
 
-    try:
-        # Instantiate the readable Body of the file tp unzip
-        logger.info(f"## Opening file {file_to_unzip} from s3://{source_bucket_name}")
+    # Instantiate the readable Body of the file tp unzip
+    logger.info(f"## Opening file {file_to_unzip} from s3://{source_bucket_name}")
 
-        s3 = boto3.resource('s3')
-        s3_obj = s3.Object(source_bucket_name, file_to_unzip)
-        body = s3_obj.get()['Body']
+    s3 = boto3.resource('s3')
+    s3_obj = s3.Object(source_bucket_name, file_to_unzip)
+    body = s3_obj.get()['Body']
 
-        # Read the content of the zipped file with stream_unzip
-        for file_name, file_size, file_chunks in stream_unzip(body):
-            # Unzipping file with a content only
-            if file_size > 0:
+    # Read the content of the zipped file with stream_unzip
+    for file_name, file_size, file_chunks in stream_unzip(body):
+        # Unzipping file with a content only
+        if file_size > 0:
 
-                # filename is composed with subfolder where it is stored
-                # files are also flatten in the destination bucket
-                filename = str(file_name.decode('utf-8')).replace("/", "-")
+            # filename is composed with subfolder where it is stored
+            # files are also flatten in the destination bucket
+            filename = str(file_name.decode('utf-8')).replace("/", "-")
 
-                # Writing localy the file
-                logger.debug(f"## Buffer {filename} content")
-                buffer = BytesIO(bytes())
-                for chunk in file_chunks:
-                    buffer.write(chunk)
-                buffer.seek(0) # Important ! Reach the beginning of the buffer
+            # Writing localy the file
+            logger.debug(f"## Buffer {filename} content")
+            buffer = BytesIO(bytes())
+            for chunk in file_chunks:
+                buffer.write(chunk)
+            buffer.seek(0) # Important ! Reach the beginning of the buffer
 
-                # Put the buffer as a file into the bucket
-                destination_bucket = s3.Bucket(destination_bucket_name)
-                destination_bucket.upload_fileobj(buffer, filename)
+            # Put the buffer as a file into the bucket
+            destination_bucket = s3.Bucket(destination_bucket_name)
+            destination_bucket.upload_fileobj(buffer, filename)
 
-                logger.info(f"## Unzipped file '{filename}' is now saved in bucket {destination_bucket_name}")
-
-    except Exception as e:
-        logger.exception(e)
-        raise f'Error: Unable to unzip & upload the file {file_to_unzip} from {source_bucket_name}'
-
+            logger.info(f"## Unzipped file '{filename}' is now saved in bucket {destination_bucket_name}")
 
 @logger.inject_lambda_context(log_event=True)
-def handler(event: S3Event, context: LambdaContext) -> str:
+def handler(event: S3Event, context: LambdaContext) -> dict[str, int]:
     """Handler function for the lambda"""
 
     # Globals
@@ -77,50 +73,6 @@ def handler(event: S3Event, context: LambdaContext) -> str:
         status_code = 500
 
     # Return a status code (for Step Function Handling for instance)
-    # TODO : maybe something to re check here
     return {
         'statusCode': status_code
     }
-
-
-# Dynamicaly install steam_unzip at runtime
-if __name__ == '__main__':
-
-    handler(context={}, event={
-        "Records": [
-            {
-                "eventVersion": "2.0",
-                "eventSource": "aws:s3",
-                "awsRegion": "us-east-1",
-                "eventTime": "1970-01-01T00:00:00.000Z",
-                "eventName": "ObjectCreated:Put",
-                "userIdentity": {
-                    "principalId": "EXAMPLE"
-                },
-                "requestParameters": {
-                    "sourceIPAddress": "127.0.0.1"
-                },
-                "responseElements": {
-                    "x-amz-request-id": "EXAMPLE123456789",
-                    "x-amz-id-2": "EXAMPLE123/5678abcdefghijklambdaisawesome/mnopqrstuvwxyzABCDEFGH"
-                },
-                "s3": {
-                    "s3SchemaVersion": "1.0",
-                    "configurationId": "testConfigRule",
-                    "bucket": {
-                        "name": "124571346663-source-bucket",
-                        "ownerIdentity": {
-                            "principalId": "EXAMPLE"
-                        },
-                        "arn": "arn:aws:s3:::example-bucket"
-                    },
-                    "object": {
-                        "key": "test.zip",
-                        "size": 1024,
-                        "eTag": "0123456789abcdef0123456789abcdef",
-                        "sequencer": "0A1B2C3D4E5F678901"
-                    }
-                }
-            }
-        ]
-    })
