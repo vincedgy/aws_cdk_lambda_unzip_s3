@@ -49,7 +49,7 @@ def unzip_and_upload_files(file_to_unzip: str, source_bucket_name: str, destinat
             logger.info(f"## Unzipped file '{filename}' is now saved in bucket {destination_bucket_name}")
 
 @logger.inject_lambda_context(log_event=True)
-def handler(event: S3Event, context: LambdaContext) -> dict[str, int]:
+def lambda_handler(event: S3Event, context: LambdaContext) -> dict[str, int]:
     """Handler function for the lambda"""
 
     # Globals
