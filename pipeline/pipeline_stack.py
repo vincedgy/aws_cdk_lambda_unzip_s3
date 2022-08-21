@@ -14,12 +14,12 @@ class UnzipLambdaToS3PipelineStack(Stack):
         super().__init__(scope, id, **kwargs)
 
         # Creates a CodeCommit repository called 'UnzipFileToS3Repo'
-        repo = codecommit.Repository.from_repository_name(self, 'UnzipFileToS3Repo',
-                                                          repository_name="UnzipFileToS3Repo")
-        # repo = codecommit.Repository(
-        #    self, 'UnzipFileToS3',
-        ##    repository_name="UnzipFileToS3Repo"
-        # )
+        # repo = codecommit.Repository.from_repository_name(self, 'UnzipFileToS3Repo',
+        #                                                  repository_name="UnzipFileToS3Repo")
+        repo = codecommit.Repository(
+            self, 'UnzipFileToS3',
+            repository_name="UnzipFileToS3Repo"
+        )
 
         # Pipeline code will go here
         pipeline = pipelines.CodePipeline(self, "UnzipFileToS3Pipeline",
