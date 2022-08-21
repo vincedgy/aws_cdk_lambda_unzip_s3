@@ -26,7 +26,8 @@ class CdkUnzipLambdaStack(Stack):
 
         destination_bucket = s3.Bucket.from_bucket_name(self, "DestinationBucket", bucket_name=DESTINATION_BUCKET_NAME)
         if destination_bucket is None:
-            destination_bucket = s3.Bucket(self, "DestinationBucket", bucket_name=DESTINATION_BUCKET_NAME, removal_policy=RemovalPolicy.RETAIN)
+            destination_bucket = s3.Bucket(self, "DestinationBucket", bucket_name=DESTINATION_BUCKET_NAME,
+                                           removal_policy=RemovalPolicy.RETAIN)
 
         # Create role for your Lambda function
         lambda_role = _iam.Role(scope=self, id='cdk-lambda-role',
@@ -41,32 +42,34 @@ class CdkUnzipLambdaStack(Stack):
 
         # create layer
         custome_layer = _lambda.LayerVersion(self, 'UnzipFileFromS3Bucket_layer',
-                                     code=_lambda.AssetCode("layer/"),
-                                     description='Common helper utility',
-                                     compatible_runtimes=[_lambda.Runtime.PYTHON_3_6, _lambda.Runtime.PYTHON_3_7,
-                                                          _lambda.Runtime.PYTHON_3_8, _lambda.Runtime.PYTHON_3_9, ],
-                                     removal_policy=RemovalPolicy.DESTROY
-                                     )
+                                             code=_lambda.AssetCode("layer/"),
+                                             description='Common helper utility',
+                                             compatible_runtimes=[_lambda.Runtime.PYTHON_3_6,
+                                                                  _lambda.Runtime.PYTHON_3_7,
+                                                                  _lambda.Runtime.PYTHON_3_8,
+                                                                  _lambda.Runtime.PYTHON_3_9, ],
+                                             removal_policy=RemovalPolicy.DESTROY
+                                             )
         powertools_layer = _lambda.LayerVersion.from_layer_version_arn(
             self,
             id="lambda-powertools",
             layer_version_arn=f"arn:aws:lambda:{self.region}:017000801446:layer:AWSLambdaPowertoolsPython:29"
         )
-        lambda_insights = _lambda.LayerVersion.from_layer_version_arn(
-            self,
-            id="lambda_insights-powertools",
-            layer_version_arn=f"arn:aws:lambda:us-west-1:580247275435:layer:LambdaInsightsExtension:14"
-        )
+
         # create lambda function
         lambda_unzip_s3 = _lambda.Function(
             self,
             'UnzipFileFromS3Bucket',
             runtime=_lambda.Runtime.PYTHON_3_9,
             code=_lambda.Code.from_asset("lambda"),
+            memory_size=256,
             description='Lambda function to unzip a file from an S3 bucket. Lambda is triggered by S3 event.',
             handler="unzip_file_from_s3.handler",
             role=lambda_role,
             timeout=Duration.seconds(300),
+            insights_version=_lambda.LambdaInsightsVersion.from_insight_version_arn(
+                "arn:aws:lambda:us-west-1:580247275435:layer:LambdaInsightsExtension:14"),
+            tracing=_lambda.Tracing.ACTIVE,
             layers=[powertools_layer, custome_layer],
             environment={
                 'DESTINATION_BUCKET': DESTINATION_BUCKET_NAME,
