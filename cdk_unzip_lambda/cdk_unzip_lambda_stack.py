@@ -39,7 +39,7 @@ class CdkUnzipLambdaStack(Stack):
                                     _iam.ManagedPolicy.from_aws_managed_policy_name(
                                         'service-role/AWSLambdaBasicExecutionRole'),
                                     _iam.ManagedPolicy.from_aws_managed_policy_name(
-                                        'CloudWatchLambdaInsightsExecutionRolePolicy')
+                                        'service-role/CloudWatchLambdaInsightsExecutionRolePolicy')
                                 ])
 
         # create layer
@@ -60,7 +60,7 @@ class CdkUnzipLambdaStack(Stack):
         lambda_insights_layer = _lambda.LayerVersion.from_layer_version_arn(
             self,
             id="lambda-insights-layer",
-            layer_version_arn=f"arn:aws:lambda:us-west-1:580247275435:layer:LambdaInsightsExtension:14"
+            layer_version_arn=f"arn:aws:lambda:{self.region}:580247275435:layer:LambdaInsightsExtension:14"
         )
 
         # create lambda function
