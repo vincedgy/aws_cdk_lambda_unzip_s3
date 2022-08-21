@@ -37,7 +37,9 @@ class CdkUnzipLambdaStack(Stack):
                                     _iam.ManagedPolicy.from_aws_managed_policy_name(
                                         'service-role/AWSLambdaVPCAccessExecutionRole'),
                                     _iam.ManagedPolicy.from_aws_managed_policy_name(
-                                        'service-role/AWSLambdaBasicExecutionRole')
+                                        'service-role/AWSLambdaBasicExecutionRole'),
+                                    _iam.ManagedPolicy.from_aws_managed_policy_name(
+                                        'CloudWatchLambdaInsightsExecutionRolePolicy')
                                 ])
 
         # create layer
