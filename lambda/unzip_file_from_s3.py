@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-import logging
 import os
-import pip
+import logging
+#from aws_lambda_powertools import Logger as logger
 import boto3
+from stream_unzip import stream_unzip
 
-# Globals
-destination_bucket = os.environ["DESTINATION_BUCKET"]
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-s3 = boto3.resource('s3')
+# Globals
+try:
+    destination_bucket = os.environ["DESTINATION_BUCKET"]
+except:
+    destination_bucket = "124571346663-destination-bucket"
 
+s3 = boto3.resource('s3')
 
 def unzip_and_upload_files(file_to_unzip: str, source_bucket: str, destination_bucket: str):
     """Main function for :
@@ -23,6 +27,7 @@ def unzip_and_upload_files(file_to_unzip: str, source_bucket: str, destination_b
 
     try:
         # Instantiate the readable Body of the file tp unzip
+        logger.info(f"## Opening file {file_to_unzip} from s3://{source_bucket}")
         s3_obj = s3.Object(source_bucket, file_to_unzip)
         body = s3_obj.get()['Body']
 
@@ -37,18 +42,18 @@ def unzip_and_upload_files(file_to_unzip: str, source_bucket: str, destination_b
 
                 # writing localy the file
                 # TODO : consider put the file by stream and not localy
-                logger.info(f"Writing {filename} localy")
+                logger.info(f"## Writing {filename} localy")
                 with open(filename, "ab") as written_file:
                     for chunk in file_chunks:
                         written_file.write(chunk)
 
                 # put the file in the bucket
                 s3.Object(destination_bucket, filename).upload_file(filename)
-                logger.info(f"Unzipped file {filename} is now written on bucket {destination_bucket}")
+                logger.info(f"## Unzipped file {filename} is now written on bucket {destination_bucket}")
 
                 # deleting the file localy for the sake of the local ephemeral storage
                 os.remove(filename)
-                logger.info(f"{filename} is now deleted localy")
+                logger.info(f"## {filename} is now deleted localy")
 
     except Exception as e:
         logger.exception(e)
@@ -81,8 +86,42 @@ def handler(event, context):
 
 # Dynamicaly install steam_unzip at runtime
 if __name__ == '__main__':
-    try:
-        from stream_unzip import stream_unzip
-    except ImportError:
-        pip.main(['install', 'stream_unzip'])
-        from stream_unzip import stream_unzip
+
+    handler(context={}, event={
+        "Records": [
+            {
+                "eventVersion": "2.0",
+                "eventSource": "aws:s3",
+                "awsRegion": "us-east-1",
+                "eventTime": "1970-01-01T00:00:00.000Z",
+                "eventName": "ObjectCreated:Put",
+                "userIdentity": {
+                    "principalId": "EXAMPLE"
+                },
+                "requestParameters": {
+                    "sourceIPAddress": "127.0.0.1"
+                },
+                "responseElements": {
+                    "x-amz-request-id": "EXAMPLE123456789",
+                    "x-amz-id-2": "EXAMPLE123/5678abcdefghijklambdaisawesome/mnopqrstuvwxyzABCDEFGH"
+                },
+                "s3": {
+                    "s3SchemaVersion": "1.0",
+                    "configurationId": "testConfigRule",
+                    "bucket": {
+                        "name": "124571346663-source-bucket",
+                        "ownerIdentity": {
+                            "principalId": "EXAMPLE"
+                        },
+                        "arn": "arn:aws:s3:::example-bucket"
+                    },
+                    "object": {
+                        "key": "test.zip",
+                        "size": 1024,
+                        "eTag": "0123456789abcdef0123456789abcdef",
+                        "sequencer": "0A1B2C3D4E5F678901"
+                    }
+                }
+            }
+        ]
+    })

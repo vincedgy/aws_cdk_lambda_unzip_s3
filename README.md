@@ -40,7 +40,7 @@ $ pip install -r requirements.txt
 Install dependencies for lambda layer
 
 ```
-$ pip3 install stream_unzip --target ./layer/python
+$ rm -rf layer && pip install stream_unzip --target layer/python --upgrade --only-binary ":all:" --platform linux_x86_64 --implementation cp
 ```
 
 At this point you can now synthesize the CloudFormation template for this code.
