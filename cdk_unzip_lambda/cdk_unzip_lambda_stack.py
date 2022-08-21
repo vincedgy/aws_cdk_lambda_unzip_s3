@@ -16,18 +16,23 @@ class CdkUnzipLambdaStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        SOURCE_BUCKET_NAME = f'{Stack.of(self).account}-source-bucket'
-        DESTINATION_BUCKET_NAME = f'{Stack.of(self).account}-destination-bucket'
+        self._source_bucket = None
+        self._destination_bucket = None
+        self._source_bucket_name = f'{Stack.of(self).account}-source-bucket'
+        self._destination_bucket_name = f'{Stack.of(self).account}-destination-bucket'
 
-        source_bucket = s3.Bucket.from_bucket_name(self, "SourceBucket", bucket_name=SOURCE_BUCKET_NAME)
-        if source_bucket is None:
-            source_bucket = s3.Bucket(self, "SourceBucket", bucket_name=SOURCE_BUCKET_NAME,
-                                      removal_policy=RemovalPolicy.RETAIN)
+        try:
+            self._source_bucket = s3.Bucket(self, "SourceBucket", bucket_name=self._source_bucket_name,
+                                            removal_policy=RemovalPolicy.RETAIN)
+        except Exception as e:
+            self._source_bucket = s3.Bucket.from_bucket_name(self, "SourceBucket", bucket_name=self._source_bucket_name)
 
-        destination_bucket = s3.Bucket.from_bucket_name(self, "DestinationBucket", bucket_name=DESTINATION_BUCKET_NAME)
-        if destination_bucket is None:
-            destination_bucket = s3.Bucket(self, "DestinationBucket", bucket_name=DESTINATION_BUCKET_NAME,
-                                           removal_policy=RemovalPolicy.RETAIN)
+        try:
+            self._destination_bucket = s3.Bucket(self, "DestinationBucket", bucket_name=self._destination_bucket_name,
+                                                 removal_policy=RemovalPolicy.RETAIN)
+        except Exception as e:
+            self._destination_bucket = s3.Bucket.from_bucket_name(self, "DestinationBucket",
+                                                                  bucket_name=self._destination_bucket_name)
 
         # Create role for your Lambda function
         lambda_role = _iam.Role(scope=self, id='cdk-lambda-role',
@@ -58,7 +63,7 @@ class CdkUnzipLambdaStack(Stack):
         lambda_insights_layer = _lambda.LayerVersion.from_layer_version_arn(
             self,
             id="lambda-insights-layer",
-            layer_version_arn=f"arn:aws:lambda:eu-west-3:580247275435:layer:LambdaInsightsExtension:20"
+            layer_version_arn=f"arn:aws:lambda:{self.region}:580247275435:layer:LambdaInsightsExtension:21"
         )
 
         # create lambda function
@@ -67,7 +72,7 @@ class CdkUnzipLambdaStack(Stack):
             'UnzipFileFromS3Bucket',
             runtime=_lambda.Runtime.PYTHON_3_9,
             code=_lambda.Code.from_asset("lambda"),
-            memory_size=256,
+            memory_size=128,
             description='Lambda function to unzip a file from an S3 bucket. Lambda is triggered by S3 event.',
             handler="unzip_file_from_s3.lambda_handler",
             role=lambda_role,
@@ -75,27 +80,27 @@ class CdkUnzipLambdaStack(Stack):
             tracing=_lambda.Tracing.ACTIVE,
             layers=[powertools_layer, custome_layer, lambda_insights_layer],
             environment={
-                'DESTINATION_BUCKET': DESTINATION_BUCKET_NAME,
+                'DESTINATION_BUCKET': self._destination_bucket_name,
                 'POWERTOOLS_SERVICE_NAME': 'UnzipFileFromS3Bucket',
                 'LOG_LEVEL': 'DEBUG'
             }
         )
 
         # Adding grants on s3 for the lambda
-        source_bucket.grant_read(lambda_unzip_s3)
-        destination_bucket.grant_write(lambda_unzip_s3)
+        self._source_bucket.grant_read(lambda_unzip_s3)
+        self._destination_bucket.grant_write(lambda_unzip_s3)
 
         # Create trigger for Lambda function using suffix
         notification = s3_notify.LambdaDestination(lambda_unzip_s3)
-        notification.bind(self, source_bucket)
+        notification.bind(self, self._source_bucket)
         # Add Create Event only for .zip files
-        source_bucket.add_object_created_notification(
+        self._source_bucket.add_object_created_notification(
             notification, s3.NotificationKeyFilter(suffix='.zip'))
 
         # Output of created resource
         CfnOutput(scope=self, id='cdk-output-lambda',
                   value=lambda_unzip_s3.function_name)
         CfnOutput(scope=self, id='source_bucket',
-                  value=source_bucket.bucket_name)
+                  value=self._source_bucket.bucket_name)
         CfnOutput(scope=self, id='destination_bucket',
-                  value=destination_bucket.bucket_name)
+                  value=self._destination_bucket.bucket_name)
