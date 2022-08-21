@@ -72,17 +72,17 @@ class CdkUnzipLambdaStack(Stack):
             'UnzipFileFromS3Bucket',
             runtime=_lambda.Runtime.PYTHON_3_9,
             code=_lambda.Code.from_asset("lambda"),
-            memory_size=128,
+            memory_size=2048,
             description='Lambda function to unzip a file from an S3 bucket. Lambda is triggered by S3 event.',
             handler="unzip_file_from_s3.lambda_handler",
             role=lambda_role,
-            timeout=Duration.seconds(300),
+            timeout=Duration.seconds(600),
             tracing=_lambda.Tracing.ACTIVE,
             layers=[powertools_layer, custome_layer, lambda_insights_layer],
             environment={
                 'DESTINATION_BUCKET': self._destination_bucket_name,
                 'POWERTOOLS_SERVICE_NAME': 'UnzipFileFromS3Bucket',
-                'LOG_LEVEL': 'DEBUG'
+                'LOG_LEVEL': 'INFO'
             }
         )
 
