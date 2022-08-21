@@ -1,13 +1,13 @@
-
 # Welcome to your CDK Python project!
 
-You should explore the contents of this project. It demonstrates a CDK app with an instance of a stack (`cdk_unzip_lambda_stack`)
+You should explore the contents of this project. It demonstrates a CDK app with an instance of a
+stack (`cdk_unzip_lambda_stack`)
 which contains an Amazon SQS queue that is subscribed to an Amazon SNS topic.
 
 The `cdk.json` file tells the CDK Toolkit how to execute your app.
 
-This project is set up like a standard Python project.  The initialization process also creates
-a virtualenv within this project, stored under the .venv directory.  To create the virtualenv
+This project is set up like a standard Python project. The initialization process also creates
+a virtualenv within this project, stored under the .venv directory. To create the virtualenv
 it assumes that there is a `python3` executable in your path with access to the `venv` package.
 If for any reason the automatic creation of the virtualenv fails, you can create the virtualenv
 manually once the init process completes.
@@ -39,7 +39,11 @@ $ pip install -r requirements.txt
 
 Install dependencies for lambda layer
 
-> The layer is mandatory for the installation of all python dependencies. The target platform is lambda AmazonLinuxv2 (linux_x86_64)
+> The layer is mandatory for the installation of all python dependencies. The target platform is lambda AmazonLinuxv2 (
+> linux_x86_64)
+> We also use the
+> library [AWS Lambda powertools for python](https://awslabs.github.io/aws-lambda-powertools-python/latest) for logging
+> and other usefull decorators or X-Ray interactions. Powertools has its own public repository used for the lambda layer.
 
 ```
 $ rm -rf layer && pip install -r requirements-layer.txt --target layer/python --upgrade --only-binary ":all:" --platform linux_x86_64 --implementation cp
@@ -64,18 +68,19 @@ command.
 
 ## Useful commands
 
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
+* `cdk ls`          list all stacks in the app
+* `cdk synth`       emits the synthesized CloudFormation template
+* `cdk deploy`      deploy this stack to your default AWS account/region
+* `cdk diff`        compare deployed stack with current state
+* `cdk docs`        open CDK documentation
 
 Enjoy!
 
-
-## Intersting considerations 
+## Intersting considerations
 
 ### Lambda layers based on Docker images
 
-In order to avoir local pip install for the layer, another approach should be to use docker images and build the docker image on AWS
-Need to check [this article](https://aws.amazon.com/blogs/devops/using-aws-codepipeline-for-deploying-container-images-to-aws-lambda-functions/)
+In order to avoir local pip install for the layer, another approach should be to use docker images and build the docker
+image on AWS
+Need to
+check [this article](https://aws.amazon.com/blogs/devops/using-aws-codepipeline-for-deploying-container-images-to-aws-lambda-functions/)

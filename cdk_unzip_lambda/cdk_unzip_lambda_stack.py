@@ -5,7 +5,7 @@ from aws_cdk import (
     aws_s3_notifications as s3_notify,
     RemovalPolicy,
     CfnOutput,
-    Stack,
+    Stack, Duration,
 
 )
 from constructs import Construct
@@ -61,12 +61,12 @@ class CdkUnzipLambdaStack(Stack):
             description='Lambda function to unzip a file from an S3 bucket. Lambda is triggered by S3 event.',
             handler="unzip_file_from_s3.handler",
             role=lambda_role,
-
+            timeout=Duration.seconds(300),
             layers=[powertools_layer, custome_layer],
             environment={
                 'DESTINATION_BUCKET': DESTINATION_BUCKET_NAME,
                 'POWERTOOLS_SERVICE_NAME': 'UnzipFileFromS3Bucket',
-                'LOG_LEVEL': 'INFO'
+                'LOG_LEVEL': 'DEBUG'
             }
         )
 
