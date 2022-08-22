@@ -33,9 +33,9 @@ def unzip_and_upload_files(file_to_unzip: str, source_bucket_name: str, destinat
 
             # filename is composed with subfolder where it is stored
             # files are also flatten in the destination bucket
-            filename = str(file_name.decode('utf-8')).replace("/", "-")
+            filename = str(file_name.decode('utf-8', 'ignore')).replace("/", "-")
 
-            # Writing localy the file
+            # Loading the content of the file in a memory buffer
             logger.debug(f"## Buffer {filename} content")
             buffer = BytesIO(bytes())
             for chunk in file_chunks:
