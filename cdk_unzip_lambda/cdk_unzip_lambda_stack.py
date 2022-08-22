@@ -72,7 +72,7 @@ class CdkUnzipLambdaStack(Stack):
             'UnzipFileFromS3Bucket',
             runtime=_lambda.Runtime.PYTHON_3_9,
             code=_lambda.Code.from_asset("lambda"),
-            memory_size=2048,
+            memory_size=1024,
             description='Lambda function to unzip a file from an S3 bucket. Lambda is triggered by S3 event.',
             handler="unzip_file_from_s3.lambda_handler",
             role=lambda_role,

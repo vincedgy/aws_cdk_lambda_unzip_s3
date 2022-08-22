@@ -76,11 +76,17 @@ command.
 
 Enjoy!
 
+## Verify S3 contents
+
+```
+$ aws s3 ls s3://764612093004-destination-bucket --recursive --human-readable  --summarize
+```
+
+
 ## Intersting considerations
 
 ### Lambda layers based on Docker images
 
 In order to avoir local pip install for the layer, another approach should be to use docker images and build the docker
-image on AWS
-Need to
-check [this article](https://aws.amazon.com/blogs/devops/using-aws-codepipeline-for-deploying-container-images-to-aws-lambda-functions/)
+image on AWS.
+Need to check [this article](https://aws.amazon.com/blogs/devops/using-aws-codepipeline-for-deploying-container-images-to-aws-lambda-functions/)
